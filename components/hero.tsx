@@ -12,23 +12,23 @@ const slides = [
   {
     title: "Quality Medical Supplies",
     description: "Trusted by healthcare professionals worldwide",
-    image: "/placeholder.svg?height=600&width=1200",
+    image: "images/img.png",
     cta: "Shop Now",
-    link: "/products",
+    link: "",
   },
   {
     title: "New Arrivals",
     description: "Discover our latest medical equipment and supplies",
-    image: "/placeholder.svg?height=600&width=1200",
+    image: "images/img_3.png",
     cta: "Explore",
-    link: "/products/new",
+    link: "",
   },
   {
     title: "Special Offers",
     description: "Save on essential medical supplies this month",
-    image: "/placeholder.svg?height=600&width=1200",
+    image: "images/img_4.png",
     cta: "View Deals",
-    link: "/products/deals",
+    link: "",
   },
 ]
 

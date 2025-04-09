@@ -42,7 +42,7 @@ export default function AboutPage() {
             <div className="relative h-[400px] rounded-lg overflow-hidden shadow-xl">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent z-10 rounded-lg" />
               <Image
-                src="/placeholder.svg?height=800&width=600"
+                src="images/img_1.png"
                 alt="Medical professionals"
                 fill
                 className="object-cover"
@@ -245,19 +245,19 @@ export default function AboutPage() {
                   {
                     name: "Dr. James Wilson",
                     role: "Founder & CEO",
-                    image: "/placeholder.svg?height=400&width=400",
+                    image: "images/doctor/img_2.png",
                     bio: "Former surgeon with 20+ years of experience in healthcare management.",
                   },
                   {
                     name: "Sarah Chen",
                     role: "Chief Operations Officer",
-                    image: "/placeholder.svg?height=400&width=400",
+                    image: "images/doctor/img.png",
                     bio: "Supply chain expert who has transformed our global distribution network.",
                   },
                   {
                     name: "Michael Rodriguez",
                     role: "Chief Innovation Officer",
-                    image: "/placeholder.svg?height=400&width=400",
+                    image: "images/doctor/img_1.png",
                     bio: "Biomedical engineer focused on developing next-generation medical supplies.",
                   },
                 ].map((member, index) => (
@@ -280,19 +280,19 @@ export default function AboutPage() {
                   {
                     name: "Dr. Emily Johnson",
                     role: "Chief Medical Advisor",
-                    image: "/placeholder.svg?height=400&width=400",
+                    image: "images/doctor/img_3.png",
                     bio: "Cardiologist with expertise in medical device evaluation and safety protocols.",
                   },
                   {
                     name: "Dr. Robert Kim",
                     role: "Research Director",
-                    image: "/placeholder.svg?height=400&width=400",
+                    image: "images/doctor/img_4.png",
                     bio: "Leads our research initiatives to identify emerging healthcare needs and solutions.",
                   },
                   {
                     name: "Dr. Aisha Patel",
                     role: "Quality Assurance",
-                    image: "/placeholder.svg?height=400&width=400",
+                    image: "images/doctor/img_5.png",
                     bio: "Ensures all products meet rigorous medical standards and regulatory requirements.",
                   },
                 ].map((member, index) => (
@@ -315,19 +315,19 @@ export default function AboutPage() {
                   {
                     name: "David Thompson",
                     role: "Global Supply Chain Director",
-                    image: "/placeholder.svg?height=400&width=400",
+                    image: "images/doctor/img_5.png",
                     bio: "Manages our worldwide logistics network to ensure timely product delivery.",
                   },
                   {
                     name: "Lisa Wong",
                     role: "Customer Relations Manager",
-                    image: "/placeholder.svg?height=400&width=400",
+                    image: "images/doctor/img_5.png",
                     bio: "Leads our customer support team with a focus on exceptional service.",
                   },
                   {
                     name: "Carlos Mendez",
                     role: "Production Manager",
-                    image: "/placeholder.svg?height=400&width=400",
+                    image: "images/doctor/img_5.png",
                     bio: "Oversees manufacturing processes to maintain quality and efficiency.",
                   },
                 ].map((member, index) => (
