@@ -1,14 +1,15 @@
 // types/index.ts
-export type Product = {
-  proId: number
-  proName: string
-  proDescription: string
-  proPrice: string
-  proStatus: string
-  catId: number
-  images: ProductImage[]
-}
 
+type Product = {
+  proId: string | number;
+  proName: string;
+  proPrice: string | number;
+  proDescription: string;
+  proStatus: string;
+  catId: string | number;
+  images?: ProductImage[];
+  // other fields...
+}
 export type ProductImage = {
   id: number
   imageUrl: string

@@ -62,10 +62,11 @@ export default function ProductDetailPage() {
       const cartItem: CartItem = {
         id: product.proId.toString(),
         name: product.proName,
-        price: parseFloat(product.proPrice),
-        quantity: quantity,
+        price: Number(product.proPrice),
+        quantity: quantity, // This is correct
         image: product.images?.[0]?.imageUrl
       }
+      console.log('Adding to cart:', { quantity, cartItem }); // Debug log
       addItem(cartItem)
       toast({
         title: "Added to Cart",
