@@ -27,6 +27,7 @@
         "/cart",
         "/products/[id]",
         "/checkout",
+          "/profile",
 
       ]
 

@@ -1,97 +1,121 @@
+// hooks/use-cart.tsx
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import type { Product } from "@/types"
+import { createContext, useContext, useState, useEffect } from "react"
+import { useAuth } from "@/hooks/use-auth"
+import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
-interface CartItem extends Product {
+type CartItem = {
+  id: string
+  name: string
+  price: number
   quantity: number
+  image?: string
 }
 
-interface CartContextType {
+type CartContextType = {
   items: CartItem[]
-  addItem: (product: Product) => void
-  removeItem: (productId: string) => void
-  updateQuantity: (productId: string, quantity: number) => void
+  addItem: (item: CartItem) => void
+  removeItem: (id: string) => void
+  updateQuantity: (id: string, quantity: number) => void
   clearCart: () => void
+  subtotal: number
 }
 
-const CartContext = createContext<CartContextType>({
-  items: [],
-  addItem: () => {},
-  removeItem: () => {},
-  updateQuantity: () => {},
-  clearCart: () => {},
-})
+const CartContext = createContext<CartContextType>({} as CartContextType)
 
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [mounted, setMounted] = useState(false)
+  const { isAuthenticated } = useAuth()
+  const { toast } = useToast()
+  const router = useRouter()
 
-  // Load cart from localStorage on mount
   useEffect(() => {
     setMounted(true)
-    const storedCart = localStorage.getItem("medicare_cart")
+    const storedCart = localStorage.getItem("cart")
     if (storedCart) {
       try {
         setItems(JSON.parse(storedCart))
       } catch (error) {
         console.error("Failed to parse stored cart:", error)
-        localStorage.removeItem("medicare_cart")
+        localStorage.removeItem("cart")
       }
     }
   }, [])
 
-  // Save cart to localStorage whenever it changes
   useEffect(() => {
     if (mounted) {
-      localStorage.setItem("medicare_cart", JSON.stringify(items))
+      localStorage.setItem("cart", JSON.stringify(items))
     }
   }, [items, mounted])
 
-  const addItem = (product: Product) => {
-    setItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === product.id)
-
-      if (existingItem) {
-        // Increment quantity if item already exists
-        return prevItems.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item))
-      } else {
-        // Add new item with quantity 1
-        return [...prevItems, { ...product, quantity: 1 }]
-      }
-    })
-  }
-
-  const removeItem = (productId: string) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== productId))
-  }
-
-  const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity < 1) {
-      removeItem(productId)
+  const addItem = (item: CartItem) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to add items to cart",
+        variant: "destructive"
+      })
+      router.push('/login')
       return
     }
 
-    setItems((prevItems) => prevItems.map((item) => (item.id === productId ? { ...item, quantity } : item)))
+    setItems((prev) => {
+      const existingItem = prev.find((i) => i.id === item.id)
+      if (existingItem) {
+        return prev.map((i) =>
+            i.id === item.id
+                ? { ...i, quantity: i.quantity + item.quantity }
+                : i
+        )
+      }
+      return [...prev, item]
+    })
   }
 
-  const clearCart = () => {
-    setItems([])
+  const removeItem = (id: string) => {
+    setItems((prev) => prev.filter((item) => item.id !== id))
   }
+
+  const updateQuantity = (id: string, quantity: number) => {
+    if (quantity < 1) {
+      removeItem(id)
+      return
+    }
+    setItems((prev) =>
+        prev.map((item) =>
+            item.id === id ? { ...i, quantity } : item
+        )
+    )
+  }
+
+  const clearCart = () => setItems([])
+
+  const subtotal = items.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+  )
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart }}>
-      {children}
-    </CartContext.Provider>
+      <CartContext.Provider value={{
+        items,
+        addItem,
+        removeItem,
+        updateQuantity,
+        clearCart,
+        subtotal
+      }}>
+        {children}
+      </CartContext.Provider>
   )
 }
 
 export function useCart() {
   const context = useContext(CartContext)
-
-  if (context === undefined) {
-    throw new Error("useCart must be used within a CartProvider")
+  if (!context) {
+    throw new Error("useCart must be used within CartProvider")
   }
-
   return context
 }

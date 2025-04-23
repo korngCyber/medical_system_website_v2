@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCart } from "@/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/use-auth" // Add this import
 import { productService } from "@/services/product-service"
-import { ArrowLeft, ShoppingCart } from "lucide-react"
+import { ArrowLeft, ShoppingCart, Lock } from "lucide-react"
 import type { Product, ProductImage } from "@/types"
 
 type CartItem = {
@@ -25,6 +26,7 @@ export default function ProductDetailPage() {
   const router = useRouter()
   const { addItem } = useCart()
   const { toast } = useToast()
+  const { isAuthenticated } = useAuth() // Add this
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
@@ -58,15 +60,24 @@ export default function ProductDetailPage() {
   }, [params.id, router, toast])
 
   const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to add items to cart",
+        variant: "destructive"
+      })
+      router.push('/login')
+      return
+    }
+
     if (product) {
       const cartItem: CartItem = {
         id: product.proId.toString(),
         name: product.proName,
         price: Number(product.proPrice),
-        quantity: quantity, // This is correct
+        quantity: quantity,
         image: product.images?.[0]?.imageUrl
       }
-      console.log('Adding to cart:', { quantity, cartItem }); // Debug log
       addItem(cartItem)
       toast({
         title: "Added to Cart",
@@ -147,7 +158,7 @@ export default function ProductDetailPage() {
                         size="icon"
                         className="h-10 w-10"
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        disabled={quantity <= 1}
+                        disabled={quantity <= 1 || !isAuthenticated}
                     >
                       -
                     </Button>
@@ -157,12 +168,25 @@ export default function ProductDetailPage() {
                         size="icon"
                         className="h-10 w-10"
                         onClick={() => setQuantity(quantity + 1)}
+                        disabled={!isAuthenticated}
                     >
                       +
                     </Button>
                   </div>
-                  <Button className="flex-1" onClick={handleAddToCart}>
-                    <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                  <Button
+                      className="flex-1"
+                      onClick={handleAddToCart}
+                      disabled={!isAuthenticated}
+                  >
+                    {isAuthenticated ? (
+                        <>
+                          <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                        </>
+                    ) : (
+                        <>
+                          <Lock className="mr-2 h-4 w-4" /> Login to Add
+                        </>
+                    )}
                   </Button>
                 </div>
             ) : (

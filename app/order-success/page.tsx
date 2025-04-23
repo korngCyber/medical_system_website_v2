@@ -29,8 +29,8 @@ export default function OrderSuccessPage() {
           <Link href="/products">
             <Button variant="outline">Continue Shopping</Button>
           </Link>
-          <Link href="/profile">
-            <Button>View Order History</Button>
+          <Link href="/">
+            <Button>Back Home</Button>
           </Link>
         </div>
       </div>
