@@ -59,6 +59,7 @@ export default function ProductDetailPage() {
     }
   }, [params.id, router, toast])
 
+
   const handleAddToCart = () => {
     if (!isAuthenticated) {
       toast({
@@ -76,7 +77,8 @@ export default function ProductDetailPage() {
         name: product.proName,
         price: Number(product.proPrice),
         quantity: quantity,
-        image: product.images?.[0]?.imageUrl
+        image: product.images?.[0]?.imageUrl,
+        category: product.catId.toString()
       }
       addItem(cartItem)
       toast({

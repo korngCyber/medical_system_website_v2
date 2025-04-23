@@ -1,4 +1,3 @@
-// hooks/use-cart.tsx
 "use client"
 
 import { createContext, useContext, useState, useEffect } from "react"
@@ -12,6 +11,7 @@ type CartItem = {
   price: number
   quantity: number
   image?: string
+  category?: string
 }
 
 type CartContextType = {
@@ -86,7 +86,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
     setItems((prev) =>
         prev.map((item) =>
-            item.id === id ? { ...i, quantity } : item
+            item.id === id ? { ...item, quantity } : item
         )
     )
   }
