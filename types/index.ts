@@ -21,3 +21,26 @@ export type ProductResponse = {
   currentPage: number
   products: Product[]
 }
+// types/index.ts
+export type User = {
+  id: number
+  name: string
+  email: string
+  role: string
+}
+
+export type Customer = {
+  cusId: number
+  cusName: string
+  cusEmail: string
+  cusPhone: string
+  cusAddress: string
+  cusStatus: boolean
+  cusPassword: string
+  cusRole: string
+  cusImage: string | null
+  cusBio: string | null
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
