@@ -1,4 +1,3 @@
-// components/auth-provider.tsx
 "use client"
 
 import { createContext, useEffect, useState } from "react"
@@ -14,8 +13,9 @@ type User = {
 type AuthContextType = {
   user: User | null
   isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<boolean>
+  login: (email: string, password: string) => Promise<{ success: boolean; user: User | null }>
   logout: () => void
+  setUser: (user: User | null) => void
 }
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType)
@@ -25,7 +25,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check for existing session
     const currentUser = authService.getCurrentUser()
     if (currentUser) {
       setUser(currentUser)
@@ -34,12 +33,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string) => {
-    const success = await authService.login({ email, password })
-    if (success) {
-      const user = authService.getCurrentUser()
-      setUser(user)
+    const result = await authService.login({ email, password })
+    if (result.success && result.user) {
+      setUser(result.user)
     }
-    return success
+    return result
   }
 
   const logout = () => {
@@ -56,7 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isAuthenticated: !!user,
         login,
-        logout
+        logout,
+        setUser
       }}>
         {children}
       </AuthContext.Provider>

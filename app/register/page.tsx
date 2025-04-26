@@ -11,13 +11,14 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
 import { Camera, UserCircle } from "lucide-react"
 import Link from "next/link"
-import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
+import { authService } from "@/services/auth-service"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { signIn } = useAuth()
   const { toast } = useToast()
+  const { setUser } = useAuth()
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>("")
@@ -30,7 +31,6 @@ export default function RegisterPage() {
     confirmPassword: "",
     cusImage: "",
     cusBio: "",
-    cusRole: "customer",
     acceptTerms: false
   })
   const [isLoading, setIsLoading] = useState(false)
@@ -56,6 +56,7 @@ export default function RegisterPage() {
       setFormData({ ...formData, cusImage: url })
     }
   }
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -91,20 +92,32 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      await signIn({
-        id: "1",
-        name: formData.cusName,
-        email: formData.cusEmail,
-        image: previewUrl || "/placeholder.svg?height=32&width=32",
-      })
+      const registerData = {
+        cusName: formData.cusName,
+        cusEmail: formData.cusEmail,
+        cusPhone: formData.cusPhone,
+        cusAddress: formData.cusAddress,
+        cusPassword: formData.cusPassword,
+        cusImage: formData.cusImage,
+        cusBio: formData.cusBio
+      }
 
-      toast({
-        title: "Success",
-        description: "Your account has been created successfully",
-      })
+      const { success, user } = await authService.register(registerData)
 
-      router.push("/")
+      if (success && user) {
+        setUser(user)
+        toast({
+          title: "Success",
+          description: "Your account has been created and you're now logged in",
+        })
+        router.push("/")
+      } else {
+        toast({
+          title: "Error",
+          description: "Registration failed. Please try again.",
+          variant: "destructive",
+        })
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -115,6 +128,8 @@ export default function RegisterPage() {
       setIsLoading(false)
     }
   }
+
+  // Rest of the JSX remains the same...
 
   return (
       <div className="container max-w-2xl py-8 px-4">

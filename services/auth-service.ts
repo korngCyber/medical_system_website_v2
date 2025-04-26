@@ -1,4 +1,3 @@
-// services/auth-service.ts
 import Cookies from 'js-cookie'
 import { api } from './api'
 
@@ -10,6 +9,26 @@ type LoginCredentials = {
   password: string
 }
 
+type RegisterData = {
+  cusName: string
+  cusEmail: string
+  cusPhone: string
+  cusAddress: string
+  cusPassword: string
+  cusImage?: string
+  cusBio?: string
+}
+
+type ApiResponse = {
+  message: string
+  customer: {
+    id: number
+    name: string
+    email: string
+    role: string
+  }
+}
+
 type User = {
   id: number
   name: string
@@ -18,22 +37,44 @@ type User = {
 }
 
 export const authService = {
-  login: async (credentials: LoginCredentials): Promise<boolean> => {
+  register: async (data: RegisterData): Promise<{ success: boolean; user: User | null }> => {
     try {
-      const response = await api.post('/auth/login', credentials)
+      const registerData = {
+        ...data,
+        cusRole: 'customer'
+      }
+
+      const response = await api.post<ApiResponse>('/auth/register', registerData)
+
+      if (response.message === 'Registration successful') {
+        // Auto login after successful registration
+        return await authService.login({
+          email: data.cusEmail,
+          password: data.cusPassword
+        })
+      }
+      return { success: false, user: null }
+    } catch (error) {
+      console.error('Registration failed:', error)
+      return { success: false, user: null }
+    }
+  },
+
+  login: async (credentials: LoginCredentials): Promise<{ success: boolean; user: User | null }> => {
+    try {
+      const response = await api.post<ApiResponse>('/auth/login', credentials)
 
       if (response.message === 'Login successful') {
-        // Save user data in cookie
         Cookies.set(COOKIE_NAME, JSON.stringify(response.customer), {
           expires: COOKIE_EXPIRY,
           sameSite: 'strict'
         })
-        return true
+        return { success: true, user: response.customer }
       }
-      return false
+      return { success: false, user: null }
     } catch (error) {
       console.error('Login failed:', error)
-      return false
+      return { success: false, user: null }
     }
   },
 
