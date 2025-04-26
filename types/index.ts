@@ -44,3 +44,32 @@ export type Customer = {
   updated_at: string
   deleted_at: string | null
 }
+export type OrderProduct = {
+  proId: number
+  quantity: number
+  price: number
+}
+
+export type OrderCreate = {
+  orderDate: string
+  orderStatus: string
+  orderTotalAmount: number
+  orderPaymentMethod: string
+  orderShipping: string
+  cusId: number
+  products: OrderProduct[]
+}
+
+export type OrderResponse = {
+  orderPaymentStatus: string
+  orderId: number
+  orderDate: string
+  orderStatus: string
+  orderTotalAmount: string
+  orderPaymentMethod: string
+  orderShipping: string
+  cusId: number
+  updated_at: string
+  created_at: string
+  deleted_at: string | null
+}

@@ -1,24 +1,38 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useCart } from "@/hooks/use-cart"
-import { useToast } from "@/hooks/use-toast"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Trash2, Plus, Minus } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
 import Link from "next/link"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useCart } from "@/hooks/use-cart"
+import { useAuth } from "@/hooks/use-auth"
+import { useToast } from "@/hooks/use-toast"
+import { orderService } from "@/services/order-service"
 
 export default function CartPage() {
   const router = useRouter()
+  const { user } = useAuth()
   const { items, removeItem, updateQuantity, clearCart } = useCart()
   const { toast } = useToast()
   const [paymentMethod, setPaymentMethod] = useState("cod")
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login')
+      toast({
+        title: "Authentication Required",
+        description: "Please login to access your cart",
+        variant: "destructive",
+      })
+    }
+  }, [user, router, toast])
 
   const subtotal = items.reduce((total, item) => {
     return total + item.price * item.quantity
@@ -28,6 +42,16 @@ export default function CartPage() {
   const total = subtotal + shippingCost
 
   const handleCheckout = async () => {
+    if (!user?.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to checkout",
+        variant: "destructive",
+      })
+      router.push('/login')
+      return
+    }
+
     if (items.length === 0) {
       toast({
         title: "Cart is empty",
@@ -40,49 +64,43 @@ export default function CartPage() {
     setIsLoading(true)
 
     try {
-      // Simulated API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      if (paymentMethod === "cod") {
-        toast({
-          title: "Order Placed",
-          description: "Your order has been placed successfully. You will pay on delivery.",
-        })
-      } else {
-        toast({
-          title: "Order Placed",
-          description: "Your order has been placed successfully. Please complete the bank transfer.",
-        })
+      const orderData = {
+        orderDate: new Date().toISOString().split('T')[0],
+        orderStatus: "pending",
+        orderTotalAmount: Number(total),
+        orderPaymentMethod: "credit_card", // Fixed value as per API
+        orderShipping: "standard",
+        cusId: Number(user.id),
+        products: items.map(item => ({
+          proId: Number(item.id),
+          quantity: Number(item.quantity),
+          price: Number(item.price)
+        }))
       }
 
-      clearCart()
-      router.push("/order-success")
-    } catch (error) {
+      console.log("Sending order:", orderData)
+
+      const response = await orderService.createOrder(orderData)
+      console.log("Order response:", response)
+
+      if (response.orderId) {
+        toast({
+          title: "Order Placed Successfully",
+          description: `Order #${response.orderId} has been created.`,
+        })
+        clearCart()
+        router.push(`/order-success?orderId=${response.orderId}`)
+      }
+    } catch (error: any) {
+      console.error("Checkout failed:", error)
       toast({
-        title: "Error",
-        description: "Failed to process your order. Please try again.",
+        title: "Checkout Failed",
+        description: error.message || "Failed to process order",
         variant: "destructive",
       })
     } finally {
       setIsLoading(false)
     }
-  }
-
-  if (items.length === 0) {
-    return (
-        <div className="container py-12 text-center">
-          <div className="max-w-md mx-auto">
-            <div className="flex justify-center mb-6">
-              <ShoppingBag className="h-16 w-16 text-muted-foreground" />
-            </div>
-            <h1 className="text-2xl font-bold mb-2">Your cart is empty</h1>
-            <p className="text-muted-foreground mb-6">Looks like you haven't added any products to your cart yet.</p>
-            <Link href="/products">
-              <Button>Browse Products</Button>
-            </Link>
-          </div>
-        </div>
-    )
   }
 
   return (
@@ -102,8 +120,8 @@ export default function CartPage() {
                         <div className="h-20 w-20 bg-muted rounded overflow-hidden">
                           {item.image && (
                               <img
-                              src={`http://localhost:3002/${item.image}`}
-                              alt={item.name}
+                                  src={`http://localhost:3002/${item.image}`}
+                                  alt={item.name}
                                   className="h-full w-full object-cover"
                               />
                           )}
@@ -206,9 +224,13 @@ export default function CartPage() {
                 <Button
                     className="w-full"
                     onClick={handleCheckout}
-                    disabled={isLoading}
+                    disabled={isLoading || !user}
                 >
-                  {isLoading ? "Processing..." : `Checkout • ${formatPrice(total)}`}
+                  {isLoading
+                      ? "Processing..."
+                      : !user
+                          ? "Login to Checkout"
+                          : `Checkout • ${formatPrice(total)}`}
                 </Button>
               </CardFooter>
             </Card>

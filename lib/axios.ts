@@ -1,10 +1,16 @@
-import axios from 'axios';
+import axios from 'axios'
 
-// Create an Axios instance
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  withCredentials: true, // Ensure credentials are sent with requests
-});
+const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002/api/v1"
+
+// Create axios instance
+export const api = axios.create({
+    baseURL,
+    headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+    },
+    timeout: 10000
+})
 
 // Add request interceptor
 api.interceptors.request.use(
