@@ -1,59 +1,63 @@
 "use client"
 
-import { createContext, useState, useEffect, type ReactNode } from "react"
-import type { User } from "@/types"
+import { createContext, useEffect, useState } from "react"
+import { authService } from "@/services/auth-service"
 
-interface AuthContextType {
-  user: User | null
-  isAuthenticated: boolean
-  signIn: (user: User) => Promise<void>
-  signOut: () => Promise<void>
+type User = {
+  id: number
+  name: string
+  email: string
+  role: string
 }
 
-export const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isAuthenticated: false,
-  signIn: async () => {},
-  signOut: async () => {},
-})
+type AuthContextType = {
+  user: User | null
+  isAuthenticated: boolean
+  login: (email: string, password: string) => Promise<{ success: boolean; user: User | null }>
+  logout: () => void
+  setUser: (user: User | null) => void
+}
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const AuthContext = createContext<AuthContextType>({} as AuthContextType)
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is already logged in (from localStorage in this demo)
-    const storedUser = localStorage.getItem("medicare_user")
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser)
-        setUser(parsedUser)
-        setIsAuthenticated(true)
-      } catch (error) {
-        console.error("Failed to parse stored user:", error)
-        localStorage.removeItem("medicare_user")
-      }
+    const currentUser = authService.getCurrentUser()
+    if (currentUser) {
+      setUser(currentUser)
     }
     setIsLoading(false)
   }, [])
 
-  const signIn = async (userData: User) => {
-    // In a real app, this would validate with a backend
-    setUser(userData)
-    setIsAuthenticated(true)
-    localStorage.setItem("medicare_user", JSON.stringify(userData))
+  const login = async (email: string, password: string) => {
+    const result = await authService.login({ email, password })
+    if (result.success && result.user) {
+      setUser(result.user)
+    }
+    return result
   }
 
-  const signOut = async () => {
+  const logout = () => {
+    authService.logout()
     setUser(null)
-    setIsAuthenticated(false)
-    localStorage.removeItem("medicare_user")
+  }
+
+  if (isLoading) {
+    return null
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, signIn, signOut }}>
-      {!isLoading && children}
-    </AuthContext.Provider>
+      <AuthContext.Provider value={{
+        user,
+        isAuthenticated: !!user,
+        login,
+        logout,
+        setUser
+      }}>
+        {children}
+      </AuthContext.Provider>
   )
 }
