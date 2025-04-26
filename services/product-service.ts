@@ -29,3 +29,18 @@ export const productService = {
     }
   }
 }
+export const getImageUrl = (imagePath: string | undefined | null): string => {
+  if (!imagePath) return '/placeholder-image.jpg'; // A default placeholder
+  
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+  
+  // For API endpoints, we'd use ${baseUrl}/api/v1/...
+  // But for static assets like images, we just use the base URL
+  
+  // Ensure we don't double up on slashes
+  if (imagePath.startsWith('/')) {
+    return `${baseUrl}${imagePath}`;
+  }
+  
+  return `${baseUrl}/${imagePath}`;
+};

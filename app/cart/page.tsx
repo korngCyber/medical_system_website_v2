@@ -102,8 +102,8 @@ export default function CartPage() {
                         <div className="h-20 w-20 bg-muted rounded overflow-hidden">
                           {item.image && (
                               <img
-                                  src={`${process.env.NEXT_PUBLIC_API_URL}/${item.image}`}
-                                  alt={item.name}
+                              src={`http://localhost:3002/${item.image}`}
+                              alt={item.name}
                                   className="h-full w-full object-cover"
                               />
                           )}
